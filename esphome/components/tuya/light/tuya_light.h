@@ -41,6 +41,7 @@ class TuyaLight : public Component, public light::LightOutput {
     this->warm_white_temperature_ = warm_white_temperature;
   }
   void set_color_interlock(bool color_interlock) { color_interlock_ = color_interlock; }
+  void set_restore_from_tuya(bool restore_from_tuya) { restore_from_tuya_ = restore_from_tuya; }
 
   light::LightTraits get_traits() override;
   void setup_state(light::LightState *state) override;
@@ -65,6 +66,8 @@ class TuyaLight : public Component, public light::LightOutput {
   bool color_temperature_invert_{false};
   bool color_interlock_{false};
   light::LightState *state_{nullptr};
+  bool restore_from_tuya_{true};
+  bool just_initialized_{false};
 };
 
 }  // namespace tuya

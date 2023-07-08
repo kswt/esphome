@@ -95,6 +95,7 @@ void TuyaLight::setup() {
   if (min_value_datapoint_id_.has_value()) {
     this->parent_->set_integer_datapoint_value(*this->min_value_datapoint_id_, this->min_value_);
   }
+  this->just_initialized_ = true;
 }
 
 void TuyaLight::dump_config() {
@@ -147,6 +148,23 @@ void TuyaLight::write_state(light::LightState *state) {
   float red = 0.0f, green = 0.0f, blue = 0.0f;
   float color_temperature = 0.0f, brightness = 0.0f;
 
+
+  if (this->just_initialized_) {
+    this->just_initialized_ = false;
+    if (this->restore_from_tuya_) {
+      // Set state only
+      if (this->switch_id_.has_value()) {
+        this->parent_->set_boolean_datapoint_value(*this->switch_id_, state->current_values.is_on());
+      }
+      return;
+    }
+  }
+
+  if (!state->current_values.is_on() && this->switch_id_.has_value()) {
+    this->parent_->set_boolean_datapoint_value(*this->switch_id_, false);
+    return;
+  }
+
   if (this->color_id_.has_value()) {
     if (this->color_temperature_id_.has_value()) {
       state->current_values_as_rgbct(&red, &green, &blue, &color_temperature, &brightness);
@@ -161,10 +179,6 @@ void TuyaLight::write_state(light::LightState *state) {
     state->current_values_as_brightness(&brightness);
   }
 
-  if (!state->current_values.is_on() && this->switch_id_.has_value()) {
-    this->parent_->set_boolean_datapoint_value(*this->switch_id_, false);
-    return;
-  }
 
   if (brightness > 0.0f || !color_interlock_) {
     if (this->color_temperature_id_.has_value()) {

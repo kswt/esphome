@@ -25,6 +25,7 @@ CONF_RGB_DATAPOINT = "rgb_datapoint"
 CONF_HSV_DATAPOINT = "hsv_datapoint"
 CONF_COLOR_DATAPOINT = "color_datapoint"
 CONF_COLOR_TYPE = "color_type"
+CONF_RESTORE_FROM_TUYA = "restore_from_tuya"
 
 TuyaColorType = tuya_ns.enum("TuyaColorType")
 
@@ -72,6 +73,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(
                 CONF_DEFAULT_TRANSITION_LENGTH, default="0s"
             ): cv.positive_time_period_milliseconds,
+            cv.Optional(CONF_RESTORE_FROM_TUYA, default=True): cv.boolean,
         }
     ).extend(cv.COMPONENT_SCHEMA),
     cv.has_at_least_one_key(
@@ -118,5 +120,6 @@ async def to_code(config):
         )
 
     cg.add(var.set_color_interlock(config[CONF_COLOR_INTERLOCK]))
+    cg.add(var.set_restore_from_tuya(config[CONF_RESTORE_FROM_TUYA]))
     paren = await cg.get_variable(config[CONF_TUYA_ID])
     cg.add(var.set_tuya_parent(paren))
